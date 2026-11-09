@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>نظام تسجيل المقررات - معهد القاهرة العالي</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+</head>
+<body>
+  <div id="topbar" class="topbar hidden">
+    <div class="brand">
+      <img src="assets/logo.png" alt="شعار المعهد" />
+      <h1>معهد القاهرة العالي للهندسة وعلوم الحاسب والإدارة</h1>
+    </div>
+    <div class="actions">
+      <span id="userLabel"></span>
+      <button class="btn outline" id="logoutBtn">تسجيل الخروج</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- Login -->
+    <section id="view-login" class="card login-box">
+      <h2>تسجيل الدخول</h2>
+      <p class="muted">أدخل البريد الإلكتروني وكلمة المرور للوصول إلى النظام.</p>
+      <label>البريد الإلكتروني</label>
+      <input type="email" id="loginEmail" placeholder="example@test.com" />
+      <label>كلمة المرور</label>
+      <input type="password" id="loginPassword" placeholder="********" />
+      <button class="btn" id="loginBtn">دخول</button>
+      <div id="loginMsg"></div>
+      <p class="muted">يتم إنشاء الحسابات من قبل الإدارة. لا يمكن للزوار اختيار دور.</p>
+    </section>
+
+    <!-- Setup notice if config missing -->
+    <section id="view-setup" class="card hidden">
+      <h2>إعداد Supabase</h2>
+      <p class="muted">يرجى إعداد بيانات الاتصال في config.js.</p>
+    </section>
+
+    <!-- Student -->
+    <section id="view-student" class="hidden">
+      <div class="card">
+        <h2>مرحباً <span id="studentName"></span></h2>
+        <p>عدد المقررات المسجلة: <strong id="studentRegCount">0</strong></p>
+      </div>
+
+      <div class="card">
+        <h2>البحث عن مقرر</h2>
+        <input type="text" id="courseSearch" placeholder="ابحث بالاسم أو الرمز" />
+        <table class="table" id="coursesTable">
+          <thead><tr><th>الرمز</th><th>الاسم</th><th>الدكتور</th><th>الساعات</th><th>السعة</th><th>الجدول</th><th>إجراء</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <h2>مقرراتي</h2>
+        <table class="table" id="myCoursesTable">
+          <thead><tr><th>الرمز</th><th>الاسم</th><th>الدكتور</th><th>الجدول</th><th>إجراء</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <h2>جدولي</h2>
+        <ul id="scheduleList"></ul>
+      </div>
+    </section>
+
+    <!-- Doctor -->
+    <section id="view-doctor" class="hidden">
+      <div class="card">
+        <h2>مرحباً د. <span id="doctorName"></span></h2>
+      </div>
+      <div class="card">
+        <h2>مقرراتي</h2>
+        <table class="table" id="doctorCoursesTable">
+          <thead><tr><th>الرمز</th><th>الاسم</th><th>المسجلون</th><th>السعة</th><th>الجدول</th><th>عرض</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="card hidden" id="doctorStudentsCard">
+        <h2>الطلاب المسجلون في: <span id="selectedCourseName"></span></h2>
+        <table class="table" id="doctorStudentsTable">
+          <thead><tr><th>الاسم</th><th>البريد</th><th>تاريخ التسجيل</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Admin -->
+    <section id="view-admin" class="hidden">
+      <div class="card">
+        <h2>مرحباً <span id="adminName"></span></h2>
+        <div class="grid">
+          <div class="card"><strong>الطلاب</strong><div id="statStudents">0</div></div>
+          <div class="card"><strong>الأساتذة</strong><div id="statDoctors">0</div></div>
+          <div class="card"><strong>المقررات</strong><div id="statCourses">0</div></div>
+          <div class="card"><strong>التسجيلات</strong><div id="statRegs">0</div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>إضافة / تعديل مقرر</h2>
+        <input type="hidden" id="courseId" />
+        <label>رمز المقرر</label>
+        <input type="text" id="courseCode" />
+        <label>اسم المقرر</label>
+        <input type="text" id="courseName" />
+        <label>الوصف</label>
+        <textarea id="courseDesc"></textarea>
+        <label>الدكتور</label>
+        <select id="courseDoctor"></select>
+        <label>الساعات المعتمدة</label>
+        <input type="number" id="courseCredits" min="0" />
+        <label>السعة</label>
+        <input type="number" id="courseCapacity" min="1" />
+        <label>الجدول</label>
+        <input type="text" id="courseSchedule" />
+        <button class="btn" id="saveCourseBtn">حفظ</button>
+        <button class="btn secondary" id="clearCourseBtn">مسح</button>
+        <div id="courseMsg"></div>
+      </div>
+
+      <div class="card">
+        <h2>جميع المقررات</h2>
+        <table class="table" id="adminCoursesTable">
+          <thead><tr><th>الرمز</th><th>الاسم</th><th>الدكتور</th><th>مسجل/سعة</th><th>إجراءات</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <h2>المستخدمون</h2>
+        <table class="table" id="adminUsersTable">
+          <thead><tr><th>الاسم</th><th>البريد</th><th>الدور</th><th>الحالة</th><th>إجراءات</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <h2>جميع التسجيلات</h2>
+        <table class="table" id="adminRegsTable">
+          <thead><tr><th>الطالب</th><th>المقرر</th><th>التاريخ</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+ <div id="globalMsg"></div>
+
+  <!-- 1. استدعاء مكتبة Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  
+  <!-- 2. استدعاء ملف الإعدادات -->
+  <script src="config.js"></script>
+
+  <!-- 3. استدعاء الكود الرئيسي -->
+  <script src="app.js"></script>
+</body>
+</html>
+</body>
+</html>
