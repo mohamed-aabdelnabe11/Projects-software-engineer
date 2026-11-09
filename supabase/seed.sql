@@ -1,22 +1,35 @@
--- Sample data. Run after creating auth users + profiles.
-
--- Sample courses (doctor assigned by email if profile exists)
+-- 1. السبت: برمجة الويب (CS333)
 insert into public.courses (course_code, course_name, description, doctor_id, credit_hours, capacity, schedule)
-select 'CS101','Introduction to Programming','Basics of programming concepts', p.id, 3, 30, 'Sun/Tue 10:00-12:00'
-from public.profiles p where p.email = 'doctor1@test.com'
-on conflict (course_code) do nothing;
+select 'CS333', 'برمجة الويب', 'Lec 112', p.id, 3, 30, 'السبت 11:00-12:45'
+from public.profiles p where p.email = 'doctor@test.com'
+on conflict (course_code) do update set schedule = excluded.schedule, capacity = excluded.capacity;
 
+-- 2. السبت: لغة التجميع (CS331)
 insert into public.courses (course_code, course_name, description, doctor_id, credit_hours, capacity, schedule)
-select 'CS202','Data Structures','Arrays, lists, trees and graphs', p.id, 3, 25, 'Mon/Wed 12:00-14:00'
-from public.profiles p where p.email = 'doctor1@test.com'
-on conflict (course_code) do nothing;
+select 'CS331', 'لغة التجميع', 'Lec 112', p.id, 3, 25, 'السبت 12:45-14:30'
+from public.profiles p where p.email = 'doctor@test.com'
+on conflict (course_code) do update set schedule = excluded.schedule, capacity = excluded.capacity;
 
+-- 3. الأحد: قواعد البيانات المتطورة (CS381)
 insert into public.courses (course_code, course_name, description, doctor_id, credit_hours, capacity, schedule)
-select 'IT303','Databases','Relational databases and SQL', p.id, 3, 20, 'Sun/Tue 14:00-16:00'
-from public.profiles p where p.email = 'doctor2@test.com'
-on conflict (course_code) do nothing;
+select 'CS381', 'قواعد البيانات المتطورة', 'Lec 219 + Online', p.id, 3, 20, 'الأحد 11:00-12:45'
+from public.profiles p where p.email = 'doctor@test.com'  
+on conflict (course_code) do update set schedule = excluded.schedule, capacity = excluded.capacity;
 
+-- 4. الأحد: هندسة البرمجيات (CS334)
 insert into public.courses (course_code, course_name, description, doctor_id, credit_hours, capacity, schedule)
-select 'MG101','Management Principles','Fundamentals of management', p.id, 2, 40, 'Thu 10:00-12:00'
-from public.profiles p where p.email = 'doctor2@test.com'
-on conflict (course_code) do nothing;
+select 'CS334', 'هندسة البرمجيات', 'Lec 212', p.id, 3, 25, 'الأحد 12:45-14:30'
+from public.profiles p where p.email = 'doctor@test.com' 
+on conflict (course_code) do update set schedule = excluded.schedule, capacity = excluded.capacity;
+
+-- 5. الخميس: البرمجة المنطقية (CS338)
+insert into public.courses (course_code, course_name, description, doctor_id, credit_hours, capacity, schedule)
+select 'CS338', 'البرمجة المنطقية', 'Lec 211', p.id, 3, 15, 'الخميس 11:00-12:45'
+from public.profiles p where p.email = 'doctor@test.com' 
+on conflict (course_code) do update set schedule = excluded.schedule, capacity = excluded.capacity;
+
+-- 6. الخميس: مقدمة في شبكات الحاسب (CS337)
+insert into public.courses (course_code, course_name, description, doctor_id, credit_hours, capacity, schedule)
+select 'CS337', 'مقدمة في شبكات الحاسب', 'Lec 212', p.id, 3, 50, 'الخميس 12:45-14:30'
+from public.profiles p where p.email = 'doctor@test.com'
+on conflict (course_code) do update set schedule = excluded.schedule, capacity = excluded.capacity;
